@@ -1,0 +1,5 @@
+pandas
+openpyxl
+tkinterdnd2
+platformdirs
+pyinstaller

@@ -1,0 +1,212 @@
+name: Build PowerTTman
+
+on:
+  workflow_dispatch:
+
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+
+  # ==========================================================
+  # Windows
+  # ==========================================================
+
+  build-windows:
+    name: Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller ^
+            --noconfirm ^
+            --clean ^
+            --onefile ^
+            --windowed ^
+            --name "PowerTTman" ^
+            main.py
+
+      - name: Rename artifact
+        shell: powershell
+        run: |
+          Rename-Item `
+            "dist\PowerTTman.exe" `
+            "PowerTTman-Windows-x64.exe"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: PowerTTman-Windows-x64
+          path: dist/PowerTTman-Windows-x64.exe
+          if-no-files-found: error
+
+
+  # ==========================================================
+  # Linux
+  # ==========================================================
+
+  build-linux:
+    name: Linux x64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Linux executable
+        run: |
+          pyinstaller \
+            --noconfirm \
+            --clean \
+            --onefile \
+            --windowed \
+            --name "PowerTTman" \
+            main.py
+
+      - name: Rename artifact
+        run: |
+          mv dist/PowerTTman dist/PowerTTman-Linux-x64
+          chmod +x dist/PowerTTman-Linux-x64
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: PowerTTman-Linux-x64
+          path: dist/PowerTTman-Linux-x64
+          if-no-files-found: error
+
+
+  # ==========================================================
+  # macOS Apple Silicon
+  # ==========================================================
+
+  build-macos-arm64:
+    name: macOS arm64
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build macOS application
+        run: |
+          pyinstaller \
+            --noconfirm \
+            --clean \
+            --onedir \
+            --windowed \
+            --name "PowerTTman" \
+            main.py
+
+      - name: Rename application
+        run: |
+          mv dist/PowerTTman.app \
+             dist/PowerTTman-macOS-arm64.app
+
+      - name: Create ZIP
+        run: |
+          cd dist
+          zip -r \
+            PowerTTman-macOS-arm64.zip \
+            PowerTTman-macOS-arm64.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: PowerTTman-macOS-arm64
+          path: dist/PowerTTman-macOS-arm64.zip
+          if-no-files-found: error
+
+
+  # ==========================================================
+  # macOS Intel
+  # ==========================================================
+
+  build-macos-intel:
+    name: macOS Intel
+    runs-on: macos-15-intel
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build macOS application
+        run: |
+          pyinstaller \
+            --noconfirm \
+            --clean \
+            --onedir \
+            --windowed \
+            --name "PowerTTman" \
+            main.py
+
+      - name: Rename application
+        run: |
+          mv dist/PowerTTman.app \
+             dist/PowerTTman-macOS-Intel.app
+
+      - name: Create ZIP
+        run: |
+          cd dist
+          zip -r \
+            PowerTTman-macOS-Intel.zip \
+            PowerTTman-macOS-Intel.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: PowerTTman-macOS-Intel
+          path: dist/PowerTTman-macOS-Intel.zip
+          if-no-files-found: error
